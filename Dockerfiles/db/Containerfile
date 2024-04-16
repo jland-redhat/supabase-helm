@@ -1,0 +1,8 @@
+from docker.io/supabase/postgres:14.1.0
+
+USER root
+
+# Install the PostgreSQL repository
+RUN apt install -y postgresql-common && /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+
+RUN apt-get install postgresql-14-pgvector -y

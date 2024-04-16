@@ -1,0 +1,33 @@
+{{- if .Values.kong.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "supabase.kong.fullname" . }}
+  labels:
+    {{- include "supabase.labels" . | nindent 4 }}
+data:
+  {{- toYaml .Values.kong.environment | nindent 2 }}
+  wrapper.sh: |
+    #!/bin/sh
+
+    set -euo pipefail
+
+    echo "Replacing env placeholders of /home/kong/kong.yml"
+
+    sed \
+    -e "s/\${SUPABASE_ANON_KEY}/${SUPABASE_ANON_KEY}/" \
+    -e "s/\${SUPABASE_SERVICE_KEY}/${SUPABASE_SERVICE_KEY}/" \
+    -e "s/\${DASHBOARD_USERNAME}/${DASHBOARD_USERNAME}/" \
+    -e "s/\${DASHBOARD_PASSWORD}/${DASHBOARD_PASSWORD}/" \
+    /home/templates/template.yml \
+    > /home/kong/kong.yml
+
+    exec /docker-entrypoint.sh kong docker-start
+{{- if .Values.kong.config -}}
+  template.yml:
+  {{- toYaml .Values.kong.config | nindent 4 }}
+{{- else }}
+  template.yml: |
+    {{- tpl (.Files.Get "configs/kong.yaml") . | nindent 4 }}
+{{- end }}
+{{- end }}

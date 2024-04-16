@@ -1,0 +1,180 @@
+_format_version: '2.1'
+_transform: true
+
+consumers:
+- username: DASHBOARD
+- username: anon
+  keyauth_credentials:
+      - key: ${SUPABASE_ANON_KEY}
+- username: service_role
+  keyauth_credentials:
+      - key: ${SUPABASE_SERVICE_KEY}
+
+
+###
+### Dashboard credentials
+###
+basicauth_credentials:
+- consumer: DASHBOARD
+  username: user_one
+  password: password_one
+- consumer: DASHBOARD
+  username: ${DASHBOARD_USERNAME}
+  password: ${DASHBOARD_PASSWORD}
+
+###
+### Access Control List
+###
+acls:
+- consumer: anon
+  group: anon
+- consumer: service_role
+  group: admin
+
+# Open Routes 
+services:
+- name: auth-v1-open
+  url: http://{{ include "supabase.auth.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:9999/verify
+  routes:
+    - name: auth-v1-open
+      strip_path: true
+      paths:
+        - /auth/v1/verify
+  plugins:
+    - name: cors
+- name: auth-v1-open-callback
+  url: http://{{ include "supabase.auth.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:9999/callback
+  routes:
+    - name: auth-v1-open-callback
+      strip_path: true
+      paths:
+        - /auth/v1/callback
+  plugins:
+    - name: cors
+
+- name: auth-v1-open-signup
+  url: http://{{ include "supabase.auth.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:9999/signup
+  routes:
+    - name: auth-v1-open-signup
+      strip_path: true
+      paths:
+        - /auth/v1/signup
+- name: auth-v1-open-token
+  url: http://{{ include "supabase.auth.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:9999/token
+  routes:
+    - name: auth-v1-open-token
+      strip_path: true
+      paths:
+        - /auth/v1/token
+- name: auth-v1-open-authorize
+  url: http://{{ include "supabase.auth.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:9999/authorize
+  routes:
+    - name: auth-v1-open-authorize
+      strip_path: true
+      paths:
+        - /auth/v1/authorize
+  plugins:
+    - name: cors
+
+
+## Secure Auth routes
+- name: auth-v1
+  url: http://{{ include "supabase.auth.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:9999/
+  routes:
+    - name: auth-v1-all
+      strip_path: true
+      paths:
+        - /auth/v1/
+  # plugins:
+  #   - name: cors
+  #   - name: key-auth
+  #     config:
+  #       hide_credentials: false
+  #   - name: acl
+  #     config:
+  #       hide_groups_header: true
+  #       allow:
+  #         - admin
+  #         - anon
+
+## Secure REST routes
+- name: rest-v1
+  url: http://{{ include "supabase.rest.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:3000/
+  routes:
+    - name: rest-v1-all
+      strip_path: true
+      paths:
+        - /rest/v1/
+  # plugins:
+  #   - name: cors
+  #   - name: key-auth
+  #     config:
+  #       hide_credentials: true
+  #   - name: acl
+  #     config:
+  #       hide_groups_header: true
+  #       allow:
+  #         - admin
+  #         - anon
+
+## Secure Realtime routes
+- name: realtime-v1
+  url: http://{{ include "supabase.realtime.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:4000/socket/
+  routes:
+    - name: realtime-v1-all
+      strip_path: true
+      paths:
+        - /realtime/v1/
+  # plugins:
+  #   - name: cors
+  #   - name: key-auth
+  #     config:
+  #       hide_credentials: false
+  #   - name: acl
+  #     config:
+  #       hide_groups_header: true
+  #       allow:
+  #         - admin
+  #         - anon
+
+## Storage routes: the storage server manages its own auth
+- name: storage-v1
+  url: http://{{ include "supabase.storage.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:5000/
+  routes:
+    - name: storage-v1-all
+      strip_path: true
+      paths:
+        - /storage/v1/
+  plugins:
+    - name: cors
+## Secure Database routes
+- name: meta
+  url: http://{{ include "supabase.meta.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:8080/
+  routes:
+    - name: meta-all
+      strip_path: true
+      paths:
+        - /api/pg-meta/default/
+  # plugins:
+  #   - name: cors
+  #   - name: key-auth
+  #     config:
+  #       hide_credentials: false
+  #   - name: acl
+  #     config:
+  #       hide_groups_header: true
+  #       allow:
+  #         - admin
+## Protected Dashboard - catch all remaining routes
+- name: dashboard
+  url: http://{{ include "supabase.studio.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:3000/
+  routes:
+    - name: dashboard-all
+      strip_path: true
+      paths:
+        - /
+  # plugins:
+  #   - name: cors
+  #   - name: basic-auth
+  #     config:
+  #       hide_credentials: true

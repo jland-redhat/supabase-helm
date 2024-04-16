@@ -1,0 +1,7 @@
+from docker.io/supabase/postgres-meta:v0.77.2
+
+ENV HOME=/usr/src/app
+
+RUN chmod g+w /usr/src/app
+
+USER 1001
