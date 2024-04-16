@@ -1,14 +1,18 @@
-# Basic Example of deploying Supabase to an Openshift Cluster
+# Supabase Deployment on OpenShift Example 
 
-Note this repo is modified version of [this example](https://github.com/supabase-community/supabase-kubernetes/blob/main/charts/supabase/README.md), updated to work on Kubernetes.
+This repository provides a modified example to deploy Supabase on an OpenShift cluster, based on the original supabase-kubernetes: [https://github.com/supabase-community/supabase-kubernetes/blob/main/charts/supabase/README.md](https://github.com/supabase-community/supabase-kubernetes/blob/main/charts/supabase/README.md) project. 
 
-Currently this is still a WIP but this should allow for the deployment of Supabase on an Openshift cluster.
+**Key Modifications**
 
-## Things to Note
+* Adjusted for OpenShift compatibility
+* Custom Docker images for 'db' and 'meta' components (addressing permissions and extension needs)
+* Authentication is currently disabled in the Kong API layer. (was not working for us but you can try to reenable it from the `configs/kong.yaml` file)
 
-The Kong API layer has authentication disabled (although the other components all seem to have their own authentication layer). This can be reenabled from the `configs/kong.yaml` if required.
+## Prerequisites
 
-The db and meta component I have using a custom image which sources can be found under the `Dockerfiles` folder. Meta was due to a permissions issue when deploying on Openshift and DB was because my app required a Postgres extension that was not included.
+* An active OpenShift cluster (specify minimum version if applicable)
+* Helm (specify minimum version if applicable)
+* Understanding of Kubernetes/OpenShift concepts
 
 ## My Environment
 
